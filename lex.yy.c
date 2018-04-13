@@ -562,8 +562,8 @@ char *yytext;
 	
 	struct symbol_table{
 		int Index;
-		char *ID;
-		char *Type;
+		char ID[40];
+		char Type[8];
 		struct symbol_table *next;
 	};
 
@@ -575,7 +575,7 @@ char *yytext;
 	int Index = 0;
 	char *ID;
 	char *Type;
-	char store[1024] = "";
+	char store[512] = "";
 	
 /* Define regular expression label */
 
@@ -867,7 +867,7 @@ YY_RULE_SETUP
 case 2:
 YY_RULE_SETUP
 #line 57 "compiler_hw1.l"
-{ BEGIN(INITIAL); printf("%s*/\t\t C++ Comment\n", store); }
+{ BEGIN(INITIAL); strcat(store, yytext); printf("%s\t\t C++ Comment\n", store); }
 	YY_BREAK
 case 3:
 /* rule 3 can match eol */
@@ -2117,11 +2117,13 @@ void create_symbol()
 
 	Index++;
 	Table -> Index = Index;
-	Table -> ID = ID;
-	Table -> Type = Type;
+	strcpy(Table -> ID, ID);
+	strcpy(Table -> Type, Type);
 	Table -> next = malloc(sizeof(struct symbol_table));
 	
 	printf("Insert a symbol: %s\n", Table->ID);
+
+	printf("%d\t%s\t%s\n", Table -> Index, Table->ID, Table->Type);
 
 	Table = Table->next;
 }
@@ -2145,8 +2147,8 @@ void dump_symbol()
 
 	temp = head;
 
-        while(temp -> next != NULL){
-                printf("%d\t%s\t%s\n", temp->Index, temp->ID, temp->Type);
+        while(temp -> Index != 0){
+                printf("%d\t%s\t%s\n", temp->Index, temp -> ID, temp->Type);
                 temp = temp -> next;
         }
 

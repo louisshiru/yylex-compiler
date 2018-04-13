@@ -14,8 +14,8 @@
 	
 	struct symbol_table{
 		int Index;
-		char *ID;
-		char *Type;
+		char ID[40];
+		char Type[8];
 		struct symbol_table *next;
 	};
 
@@ -27,7 +27,7 @@
 	int Index = 0;
 	char *ID;
 	char *Type;
-	char store[1024] = "";
+	char store[512] = "";
 	
 %}
 
@@ -54,7 +54,7 @@ declare_var_flt "var"(" "|[\t])+{id}" "+"float32"(" "|[\t])*
 %%
 
 "/*"	{ BEGIN(comment); comment_line++; strcat(store, yytext); }
-<comment>"*/" { BEGIN(INITIAL); printf("%s*/\t\t C++ Comment\n", store); }
+<comment>"*/" { BEGIN(INITIAL); strcat(store, yytext); printf("%s\t\t C++ Comment\n", store); }
 <comment>\n { strcat(store, yytext); }
 <comment>. { strcat(store, yytext); }
 
@@ -65,20 +65,20 @@ declare_var_flt "var"(" "|[\t])+{id}" "+"float32"(" "|[\t])*
 
 "print"	{ printf ("%s \t\t PRINT function \n", yytext);}
 "println"	{printf ("%s \t\t PRINTLN function \n", yytext);}
-"if"	{ printf ("%s \t if \n", yytext); }
-"else"	{ printf ("%s \t else \n", yytext); }
+"if"	{ printf ("%s \t IF function \n", yytext); }
+"else"	{ printf ("%s \t Else function \n", yytext); }
 "for"	{ printf ("%s \t FOR function \n", yytext); }
 
-"&&"	{ printf ("%s \t and \n", yytext); }
-"||"	{ printf ("%s \t or \n", yytext); }
-"!"	{ printf ("%s \t not \n", yytext); }
+"&&"	{ printf ("%s \t And \n", yytext); }
+"||"	{ printf ("%s \t Or \n", yytext); }
+"!"	{ printf ("%s \t Not \n", yytext); }
 
-"="	{ printf ("%s \t assign \n", yytext); }
-"+="	{ printf ("%s \t add assign \n", yytext); }
-"-="	{ printf ("%s \t sub assign \n", yytext); }
-"*="	{ printf ("%s \t mul assign \n", yytext); }
-"/="	{ printf ("%s \t div assign \n", yytext); }
-"%="	{ printf ("%s \t mod assign \n", yytext); }
+"="	{ printf ("%s \t Assign \n", yytext); }
+"+="	{ printf ("%s \t Add assign \n", yytext); }
+"-="	{ printf ("%s \t Sub assign \n", yytext); }
+"*="	{ printf ("%s \t Mul assign \n", yytext); }
+"/="	{ printf ("%s \t Div assign \n", yytext); }
+"%="	{ printf ("%s \t Mod assign \n", yytext); }
 
 "<"	{ printf ("%s \t Less than \n", yytext); }
 ">"	{ printf ("%s \t Greater than \n", yytext); }
@@ -140,11 +140,13 @@ void create_symbol()
 
 	Index++;
 	Table -> Index = Index;
-	Table -> ID = ID;
-	Table -> Type = Type;
+	strcpy(Table -> ID, ID);
+	strcpy(Table -> Type, Type);
 	Table -> next = malloc(sizeof(struct symbol_table));
 	
 	printf("Insert a symbol: %s\n", Table->ID);
+
+	printf("%d\t%s\t%s\n", Table -> Index, Table->ID, Table->Type);
 
 	Table = Table->next;
 }
@@ -168,8 +170,8 @@ void dump_symbol()
 
 	temp = head;
 
-        while(temp -> next != NULL){
-                printf("%d\t%s\t%s\n", temp->Index, temp->ID, temp->Type);
+        while(temp -> Index != 0){
+                printf("%d\t%s\t%s\n", temp->Index, temp -> ID, temp->Type);
                 temp = temp -> next;
         }
 
@@ -201,7 +203,5 @@ int main(int argc,char *argv[])
 	printf("The symbol table dump:\n");
 	dump_symbol();
  
-
 	return 0;
 }
-
