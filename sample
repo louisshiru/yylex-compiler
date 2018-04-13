@@ -1,13 +1,10 @@
-/* Example code. */ 
-var a int = 3 
-var b int 
-
-if a < 3 { 
-	b := 2 
-} 
-
-for i := 0; i < 10; i++ { 
-	sum += i 
-} 
-
-println(a) // Hello world
+/*
+ * This is comments
+ */
+var a int = 3
+var b int
+println(a)
+// Hello world
+for (a < b) {
+  a++
+}
