@@ -557,9 +557,9 @@ char *yytext;
 	int init(); 		// Do something initialize
 	char *text(char*);	// Extract ID, Type
 	
-	/* Create Data Structure */
-	struct symbol_table{
-		int Index;
+	/* Symbol Table Structure */
+	struct symbol_table{ 
+		int Index;	
 		char ID[40];
 		char Type[8];
 		struct symbol_table *next;
@@ -573,7 +573,7 @@ char *yytext;
 
 	/* Declaim */
 	struct symbol_table *Table, *head; // head -> Table's first
-	struct invalid_ID *i_Table, *i_head;
+	struct invalid_ID *i_Table, *i_head; // i_head -> i_Table's first
 	int line = 0; 		// count lines
 	int comment_line = 0; 	// count comment line
 	int initflag = 0; 	// First time malloc and create symbol table
@@ -2110,7 +2110,7 @@ int init()
 	Table = malloc(sizeof(struct symbol_table)); 
 	head = Table; // Set head as Table's first
 	i_Table = malloc(sizeof(struct invalid_ID));
-	i_head = i_Table;
+	i_head = i_Table; // Set i_head as i_Table's first
 	printf("Create a symbol table\n");
 	return 1;
 }
@@ -2133,9 +2133,10 @@ void check_err(char* checkID)
 	struct symbol_table *temp = head;
 	struct invalid_ID *i_temp = i_head;
 
-	int Undeclared = 1;
+	int Undeclared = 1; 
 	int Redefined = 0;
 
+	// check if already exist ID in invalid table, if, return. 
 	while(i_temp -> next != NULL)
 	{
 		if(strcmp(i_temp->ID, checkID) == 0)
@@ -2147,12 +2148,13 @@ void check_err(char* checkID)
 	{
 		if(strcmp(temp -> ID, checkID) == 0)
 		{
-			Undeclared = 0; // check, if there' exist ID.
-			Redefined += 1; // check, if there' exist >1 same ID.
+			Undeclared = 0; // check, if exist ID in symbol table. 
+			Redefined += 1; // check, if there' exist >1 same IDs in symbol table.
 		}
 		temp = temp -> next;
 	}
 
+	//Found syntax error, append to invalid ID table.
 	if (Undeclared == 1)
 	{
 		printf(":%d '%s'-> Syntax Error! Undeclared Variable\n", line+1, checkID);
@@ -2215,6 +2217,7 @@ void dump_symbol()
                 temp = temp -> next;
         }
 
+	// free all memory
 	// If head's address same as Table's,
 	// free head and return.
 	if (head == Table)
@@ -2223,6 +2226,7 @@ void dump_symbol()
 		return;
 	}
 
+	// else traversal Table and free
 	while(Table -> next != NULL)
 	{
 		next = Table -> next;
