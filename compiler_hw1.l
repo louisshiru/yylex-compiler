@@ -5,6 +5,7 @@
 	#include <string.h>
 
 	/* Symbol table function */
+	void check_err(char*);	// Use lookup function to check
 	void create_symbol(); 	// Create symbol table
 	void insert_symbol(); 	// Insert entry to symbol table
 	int lookup_symbol(); 	// Lookup symbol table
@@ -12,20 +13,27 @@
 	int init(); 		// Do something initialize
 	char *text(char*);	// Extract ID, Type
 	
-	/*Create Data Structure*/
+	/* Create Data Structure */
 	struct symbol_table{
 		int Index;
 		char ID[40];
 		char Type[8];
 		struct symbol_table *next;
 	};
+	/* Invalid_ID Structure */
+	struct invalid_ID{
+		char ID[40];
+		struct invalid_ID *next;
+	};
+	
 
 	/* Declaim */
 	struct symbol_table *Table, *head; // head -> Table's first
+	struct invalid_ID *i_Table, *i_head;
 	int line = 0; 		// count lines
 	int comment_line = 0; 	// count comment line
 	int initflag = 0; 	// First time malloc and create symbol table
-	int Index = 0; 		// count Index
+	int Index = 0; 		// count index
 	char *ID; 		// Temp, store ID
 	char *Type; 		// Temp, store Type
 	char store[1024] = ""; 	// Temp, store comments
@@ -45,9 +53,7 @@ float_num {number}"."{number}
 string ["](.|{delim})*["]
 slash_comm "//".*
 
-declare_var_int_assign "var"(" "|[\t])+{id}(" "|[\t])+"int"(" "|[\t])*"="(" "|[\t])*{number}
 declare_var_int "var"(" "|[\t])+{id}(" "|[\t])+"int"(" "|[\t])*
-declare_var_flt_assign "var"(" "|[\t])+{id}(" "|[\t])+"float32"(" "|[\t])*"="(" "|[\t])*({float_num}|{number})
 declare_var_flt "var"(" "|[\t])+{id}" "+"float32"(" "|[\t])*
 
 %x comment
@@ -64,6 +70,7 @@ declare_var_flt "var"(" "|[\t])+{id}" "+"float32"(" "|[\t])*
 {declare_var_int} { printf("%s \t int TYPE VAR \n", text(yytext)); create_symbol(); }
 {declare_var_flt} { printf("%s \t float TYPE VAR \n", text(yytext)); create_symbol(); }
 
+" "
 "print"	{ printf ("%s \t\t PRINT function \n", yytext);}
 "println"	{printf ("%s \t\t PRINTLN function \n", yytext);}
 "if"	{ printf ("%s \t IF function \n", yytext); }
@@ -96,11 +103,10 @@ declare_var_flt "var"(" "|[\t])+{id}" "+"float32"(" "|[\t])*
 "++"	{ printf ("%s \t Increment \n", yytext); }
 "--"	{ printf ("%s \t Decrement \n", yytext); }
 
-" "	
- 
+{float_num} {printf ("%s \t Float32 \n", yytext);} 
 {number} { printf ("%s \t Number \n", yytext);}
 {string} { printf ("%s \t string \n", yytext);}
-{id}	{ printf("%s \t ID \n", yytext); }
+{id}	{ printf("%s \t ID \n", yytext); check_err(yytext); }
 \n	{ line++; }
 "{" { printf ("%s \t LCB \n", yytext);}
 "}" { printf ("%s \t RCB \n", yytext);}
@@ -110,7 +116,6 @@ declare_var_flt "var"(" "|[\t])+{id}" "+"float32"(" "|[\t])*
 %%
 
 /*	C Code section */
-
 // If parse end. return 1
 int yywrap(void)
 {
@@ -121,6 +126,8 @@ int init()
 {	
 	Table = malloc(sizeof(struct symbol_table)); 
 	head = Table; // Set head as Table's first
+	i_Table = malloc(sizeof(struct invalid_ID));
+	i_head = i_Table;
 	printf("Create a symbol table\n");
 	return 1;
 }
@@ -137,6 +144,51 @@ char *text(char* yytext){
 	return ID;
 }
 
+//Traversal Table check syntax error
+void check_err(char* checkID)
+{
+	struct symbol_table *temp = head;
+	struct invalid_ID *i_temp = i_head;
+
+	int Undeclared = 1;
+	int Redefined = 0;
+
+	while(i_temp -> next != NULL)
+	{
+		if(strcmp(i_temp->ID, checkID) == 0)
+			return;
+		i_temp = i_temp -> next;
+	}
+
+	while(temp -> next != NULL)
+	{
+		if(strcmp(temp -> ID, checkID) == 0)
+		{
+			Undeclared = 0; // check, if there' exist ID.
+			Redefined += 1; // check, if there' exist >1 same ID.
+		}
+		temp = temp -> next;
+	}
+
+	if (Undeclared == 1)
+	{
+		printf(":%d '%s'-> Syntax Error! Undeclared Variable\n", line+1, checkID);
+		strcpy(i_Table -> ID, checkID);
+		i_Table -> next = malloc(sizeof(struct invalid_ID));
+		i_Table = i_Table -> next;
+		return;
+	}
+
+	if (Redefined > 1)
+	{
+		printf(":%d '%s'-> Syntax Error! Redefined variable\n", line+1, checkID);
+		strcpy(i_Table -> ID, checkID);
+		i_Table -> next = malloc(sizeof(struct invalid_ID));
+		i_Table = i_Table -> next;
+		return;
+	}	
+}
+
 void create_symbol() 
 {
 	// If never init, do this.
@@ -151,8 +203,6 @@ void create_symbol()
 	Table -> next = malloc(sizeof(struct symbol_table));
 	
 	printf("Insert a symbol: %s\n", Table->ID);
-
-	//printf("%d\t%s\t%s\n", Table -> Index, Table->ID, Table->Type);
 
 	// Table point to next
 	Table = Table->next;
