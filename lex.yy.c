@@ -553,12 +553,12 @@ char *yytext;
 	#include <string.h>
 
 	/* Symbol table function */
-	void create_symbol();
-	void insert_symbol();
-	int lookup_symbol();
-	void dump_symbol();
-	int init();
-	char *text(char*);
+	void create_symbol(); 	// Create symbol table
+	void insert_symbol(); 	// Insert entry to symbol table
+	int lookup_symbol(); 	// Lookup symbol table
+	void dump_symbol(); 	// Dump out symbol table
+	int init(); 		// Do something initialize
+	char *text(char*);	// Extract ID, Type
 	
 	/*Create Data Structure*/
 	struct symbol_table{
@@ -570,13 +570,13 @@ char *yytext;
 
 	/* Declaim */
 	struct symbol_table *Table, *head; // head -> Table's first
-	int line = 0; // count lines
-	int comment_line = 0; // count comment line
-	int initflag = 0; // First time malloc and create symbol table
-	int Index = 0; // count Index
-	char *ID; // Temp, store ID
-	char *Type; // Temp, store Type
-	char store[1024] = ""; // Temp, store comments
+	int line = 0; 		// count lines
+	int comment_line = 0; 	// count comment line
+	int initflag = 0; 	// First time malloc and create symbol table
+	int Index = 0; 		// count Index
+	char *ID; 		// Temp, store ID
+	char *Type; 		// Temp, store Type
+	char store[1024] = ""; 	// Temp, store comments
 	
 /* Define regular expression label */
 
@@ -914,7 +914,7 @@ YY_RULE_SETUP
 case 11:
 YY_RULE_SETUP
 #line 70 "compiler_hw1.l"
-{ printf ("%s \t Else function \n", yytext); }
+{ printf ("%s \t ELSE function \n", yytext); }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
@@ -2085,6 +2085,7 @@ void yyfree (void * ptr )
 
 
 /*	C Code section */
+// If parse end. return 1
 int yywrap(void)
 {
     return 1;
@@ -2092,16 +2093,15 @@ int yywrap(void)
 
 int init()
 {	
-	Table = malloc(sizeof(struct symbol_table));
-	head = Table;
+	Table = malloc(sizeof(struct symbol_table)); 
+	head = Table; // Set head as Table's first
 	printf("Create a symbol table\n");
 	return 1;
 }
 
-
-//提出變數; strtok 2 次
 char *text(char* yytext){
 	
+	//strtok ( strings, delimiter );
 	yytext = strtok(yytext, " \t\n");
 	
 	ID = strtok(NULL, " \t\n");
@@ -2113,9 +2113,11 @@ char *text(char* yytext){
 
 void create_symbol() 
 {
+	// If never init, do this.
 	if (initflag == 0)
 		initflag = init();
 
+	// set every variable
 	Index++;
 	Table -> Index = Index;
 	strcpy(Table -> ID, ID);
@@ -2126,13 +2128,13 @@ void create_symbol()
 
 	printf("%d\t%s\t%s\n", Table -> Index, Table->ID, Table->Type);
 
+	// Table point to next
 	Table = Table->next;
 }
 
 void insert_symbol() 
 {
-	if (initflag == 0)
-		initflag = init();
+	;
 }
 
 int lookup_symbol() 
@@ -2144,6 +2146,7 @@ void dump_symbol()
 {
 	struct symbol_table *next, *temp;
 
+	// If head is NULL return
 	if(!head) return;
 
 	temp = head;
@@ -2153,6 +2156,8 @@ void dump_symbol()
                 temp = temp -> next;
         }
 
+	// If head's address same as Table's,
+	// free head and return.
 	if (head == Table)
 	{
 		free(head);

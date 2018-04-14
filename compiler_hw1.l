@@ -67,7 +67,7 @@ declare_var_flt "var"(" "|[\t])+{id}" "+"float32"(" "|[\t])*
 "print"	{ printf ("%s \t\t PRINT function \n", yytext);}
 "println"	{printf ("%s \t\t PRINTLN function \n", yytext);}
 "if"	{ printf ("%s \t IF function \n", yytext); }
-"else"	{ printf ("%s \t Else function \n", yytext); }
+"else"	{ printf ("%s \t ELSE function \n", yytext); }
 "for"	{ printf ("%s \t FOR function \n", yytext); }
 
 "&&"	{ printf ("%s \t And \n", yytext); }
