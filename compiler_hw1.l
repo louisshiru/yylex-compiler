@@ -36,7 +36,7 @@
 
 letter [a-zA-Z]
 digit [0-9]
-delim [" "\n\t(){}]
+delim [" "\n\t]
 
 id {letter}+({letter}|{digit})*
 number {digit}+
@@ -96,6 +96,8 @@ declare_var_flt "var"(" "|[\t])+{id}" "+"float32"(" "|[\t])*
 "++"	{ printf ("%s \t Increment \n", yytext); }
 "--"	{ printf ("%s \t Decrement \n", yytext); }
 
+" "	
+ 
 {number} { printf ("%s \t Number \n", yytext);}
 {string} { printf ("%s \t string \n", yytext);}
 {id}	{ printf("%s \t ID \n", yytext); }
@@ -108,6 +110,7 @@ declare_var_flt "var"(" "|[\t])+{id}" "+"float32"(" "|[\t])*
 %%
 
 /*	C Code section */
+
 // If parse end. return 1
 int yywrap(void)
 {
@@ -149,7 +152,7 @@ void create_symbol()
 	
 	printf("Insert a symbol: %s\n", Table->ID);
 
-	printf("%d\t%s\t%s\n", Table -> Index, Table->ID, Table->Type);
+	//printf("%d\t%s\t%s\n", Table -> Index, Table->ID, Table->Type);
 
 	// Table point to next
 	Table = Table->next;
