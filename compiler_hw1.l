@@ -10,7 +10,6 @@
 	void insert_symbol(); 	// Insert entry to symbol table
 	int lookup_symbol(); 	// Lookup symbol table
 	void dump_symbol(); 	// Dump out symbol table
-	int init(); 		// Do something initialize
 	char *text(char*);	// Extract ID, Type
 	
 	/* Symbol Table Structure */
@@ -122,16 +121,6 @@ int yywrap(void)
     return 1;
 }
 
-int init()
-{	
-	Table = malloc(sizeof(struct symbol_table)); 
-	head = Table; // Set head as Table's first
-	i_Table = malloc(sizeof(struct invalid_ID));
-	i_head = i_Table; // Set i_head as i_Table's first
-	printf("Create a symbol table\n");
-	return 1;
-}
-
 char *text(char* yytext){
 	
 	//strtok ( strings, delimiter );
@@ -194,25 +183,36 @@ void check_err(char* checkID)
 void create_symbol() 
 {
 	// If never init, do this.
-	if (initflag == 0)
-		initflag = init();
+	if (initflag == 0){
+        	
+		Table = malloc(sizeof(struct symbol_table));
+        	head = Table; // Set head as Table's first
+        	i_Table = malloc(sizeof(struct invalid_ID));
+        	i_head = i_Table; // Set i_head as i_Table's first
+        	printf("Create a symbol table\n");
+		
+		insert_symbol();
+		initflag = 1;
+		return;
+	}
 
-	// set every variable
-	Index++;
-	Table -> Index = Index;
-	strcpy(Table -> ID, ID);
-	strcpy(Table -> Type, Type);
-	Table -> next = malloc(sizeof(struct symbol_table));
-	
-	printf("Insert a symbol: %s\n", Table->ID);
-
-	// Table point to next
-	Table = Table->next;
+	insert_symbol();
 }
 
 void insert_symbol() 
 {
-	;
+        // set every variable
+        Index++;
+        Table -> Index = Index;
+        strcpy(Table -> ID, ID);
+        strcpy(Table -> Type, Type);
+        Table -> next = malloc(sizeof(struct symbol_table));
+
+        printf("Insert a symbol: %s\n", Table->ID);
+
+        // Table point to next
+        Table = Table->next;
+
 }
 
 int lookup_symbol() 

@@ -554,7 +554,6 @@ char *yytext;
 	void insert_symbol(); 	// Insert entry to symbol table
 	int lookup_symbol(); 	// Lookup symbol table
 	void dump_symbol(); 	// Dump out symbol table
-	int init(); 		// Do something initialize
 	char *text(char*);	// Extract ID, Type
 	
 	/* Symbol Table Structure */
@@ -585,7 +584,7 @@ char *yytext;
 /* Define regular expression label */
 
 /* Rules section */
-#line 589 "lex.yy.c"
+#line 588 "lex.yy.c"
 
 #define INITIAL 0
 #define comment 1
@@ -804,10 +803,10 @@ YY_DECL
 		}
 
 	{
-#line 61 "compiler_hw1.l"
+#line 60 "compiler_hw1.l"
 
 
-#line 811 "lex.yy.c"
+#line 810 "lex.yy.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -866,233 +865,233 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 63 "compiler_hw1.l"
+#line 62 "compiler_hw1.l"
 { BEGIN(comment); comment_line++; strcat(store, yytext); }
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 64 "compiler_hw1.l"
+#line 63 "compiler_hw1.l"
 { BEGIN(INITIAL); strcat(store, yytext); printf("%s\t\t C++ Comment\n", store); strcpy(store, ""); }
 	YY_BREAK
 case 3:
 /* rule 3 can match eol */
 YY_RULE_SETUP
-#line 65 "compiler_hw1.l"
+#line 64 "compiler_hw1.l"
 { strcat(store, yytext); }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 66 "compiler_hw1.l"
+#line 65 "compiler_hw1.l"
 { strcat(store, yytext); }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 68 "compiler_hw1.l"
+#line 67 "compiler_hw1.l"
 {comment_line++; printf("%s \t\t C++ Comment\n", yytext); }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 70 "compiler_hw1.l"
+#line 69 "compiler_hw1.l"
 { printf("%s \t int TYPE VAR \n", text(yytext)); create_symbol(); }
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 71 "compiler_hw1.l"
+#line 70 "compiler_hw1.l"
 { printf("%s \t float TYPE VAR \n", text(yytext)); create_symbol(); }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 73 "compiler_hw1.l"
+#line 72 "compiler_hw1.l"
 
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 74 "compiler_hw1.l"
+#line 73 "compiler_hw1.l"
 { printf ("%s \t\t PRINT function \n", yytext);}
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 75 "compiler_hw1.l"
+#line 74 "compiler_hw1.l"
 {printf ("%s \t\t PRINTLN function \n", yytext);}
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 76 "compiler_hw1.l"
+#line 75 "compiler_hw1.l"
 { printf ("%s \t IF function \n", yytext); }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 77 "compiler_hw1.l"
+#line 76 "compiler_hw1.l"
 { printf ("%s \t ELSE function \n", yytext); }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 78 "compiler_hw1.l"
+#line 77 "compiler_hw1.l"
 { printf ("%s \t FOR function \n", yytext); }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 80 "compiler_hw1.l"
+#line 79 "compiler_hw1.l"
 { printf ("%s \t And \n", yytext); }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 81 "compiler_hw1.l"
+#line 80 "compiler_hw1.l"
 { printf ("%s \t Or \n", yytext); }
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 82 "compiler_hw1.l"
+#line 81 "compiler_hw1.l"
 { printf ("%s \t Not \n", yytext); }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 84 "compiler_hw1.l"
+#line 83 "compiler_hw1.l"
 { printf ("%s \t Assign \n", yytext); }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 85 "compiler_hw1.l"
+#line 84 "compiler_hw1.l"
 { printf ("%s \t Add assign \n", yytext); }
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 86 "compiler_hw1.l"
+#line 85 "compiler_hw1.l"
 { printf ("%s \t Sub assign \n", yytext); }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 87 "compiler_hw1.l"
+#line 86 "compiler_hw1.l"
 { printf ("%s \t Mul assign \n", yytext); }
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 88 "compiler_hw1.l"
+#line 87 "compiler_hw1.l"
 { printf ("%s \t Div assign \n", yytext); }
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 89 "compiler_hw1.l"
+#line 88 "compiler_hw1.l"
 { printf ("%s \t Mod assign \n", yytext); }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 91 "compiler_hw1.l"
+#line 90 "compiler_hw1.l"
 { printf ("%s \t Less than \n", yytext); }
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 92 "compiler_hw1.l"
+#line 91 "compiler_hw1.l"
 { printf ("%s \t Greater than \n", yytext); }
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 93 "compiler_hw1.l"
+#line 92 "compiler_hw1.l"
 { printf ("%s \t Less than or Equal \n", yytext); }
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 94 "compiler_hw1.l"
+#line 93 "compiler_hw1.l"
 { printf ("%s \t Greater than or Equal \n", yytext); }
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 95 "compiler_hw1.l"
+#line 94 "compiler_hw1.l"
 { printf ("%s \t Equal \n", yytext); }
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 96 "compiler_hw1.l"
+#line 95 "compiler_hw1.l"
 { printf ("%s \t Uneqaul \n", yytext); }
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 98 "compiler_hw1.l"
+#line 97 "compiler_hw1.l"
 { printf("%s \t Add \n", yytext); }
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 99 "compiler_hw1.l"
+#line 98 "compiler_hw1.l"
 { printf("%s \t Sub \n", yytext); }
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 100 "compiler_hw1.l"
+#line 99 "compiler_hw1.l"
 { printf ("%s \t Mul \n", yytext); }
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 101 "compiler_hw1.l"
+#line 100 "compiler_hw1.l"
 { printf ("%s \t Div \n", yytext); }
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 102 "compiler_hw1.l"
+#line 101 "compiler_hw1.l"
 { printf ("%s \t Mod \n", yytext); }
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 103 "compiler_hw1.l"
+#line 102 "compiler_hw1.l"
 { printf ("%s \t Increment \n", yytext); }
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 104 "compiler_hw1.l"
+#line 103 "compiler_hw1.l"
 { printf ("%s \t Decrement \n", yytext); }
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 106 "compiler_hw1.l"
+#line 105 "compiler_hw1.l"
 {printf ("%s \t Float32 \n", yytext);} 
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 107 "compiler_hw1.l"
+#line 106 "compiler_hw1.l"
 { printf ("%s \t Number \n", yytext);}
 	YY_BREAK
 case 38:
 /* rule 38 can match eol */
 YY_RULE_SETUP
-#line 108 "compiler_hw1.l"
+#line 107 "compiler_hw1.l"
 { printf ("%s \t string \n", yytext);}
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 109 "compiler_hw1.l"
+#line 108 "compiler_hw1.l"
 { printf("%s \t ID \n", yytext); check_err(yytext); }
 	YY_BREAK
 case 40:
 /* rule 40 can match eol */
 YY_RULE_SETUP
-#line 110 "compiler_hw1.l"
+#line 109 "compiler_hw1.l"
 { line++; }
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 111 "compiler_hw1.l"
+#line 110 "compiler_hw1.l"
 { printf ("%s \t LCB \n", yytext);}
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 112 "compiler_hw1.l"
+#line 111 "compiler_hw1.l"
 { printf ("%s \t RCB \n", yytext);}
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 113 "compiler_hw1.l"
+#line 112 "compiler_hw1.l"
 { printf ("%s \t LB \n", yytext);}
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
-#line 114 "compiler_hw1.l"
+#line 113 "compiler_hw1.l"
 { printf ("%s \t RB \n", yytext);}
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
-#line 116 "compiler_hw1.l"
+#line 115 "compiler_hw1.l"
 ECHO;
 	YY_BREAK
-#line 1096 "lex.yy.c"
+#line 1095 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(comment):
 	yyterminate();
@@ -2094,7 +2093,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 116 "compiler_hw1.l"
+#line 115 "compiler_hw1.l"
 
 
 
@@ -2103,16 +2102,6 @@ void yyfree (void * ptr )
 int yywrap(void)
 {
     return 1;
-}
-
-int init()
-{	
-	Table = malloc(sizeof(struct symbol_table)); 
-	head = Table; // Set head as Table's first
-	i_Table = malloc(sizeof(struct invalid_ID));
-	i_head = i_Table; // Set i_head as i_Table's first
-	printf("Create a symbol table\n");
-	return 1;
 }
 
 char *text(char* yytext){
@@ -2177,25 +2166,36 @@ void check_err(char* checkID)
 void create_symbol() 
 {
 	// If never init, do this.
-	if (initflag == 0)
-		initflag = init();
+	if (initflag == 0){
+        	
+		Table = malloc(sizeof(struct symbol_table));
+        	head = Table; // Set head as Table's first
+        	i_Table = malloc(sizeof(struct invalid_ID));
+        	i_head = i_Table; // Set i_head as i_Table's first
+        	printf("Create a symbol table\n");
+		
+		insert_symbol();
+		initflag = 1;
+		return;
+	}
 
-	// set every variable
-	Index++;
-	Table -> Index = Index;
-	strcpy(Table -> ID, ID);
-	strcpy(Table -> Type, Type);
-	Table -> next = malloc(sizeof(struct symbol_table));
-	
-	printf("Insert a symbol: %s\n", Table->ID);
-
-	// Table point to next
-	Table = Table->next;
+	insert_symbol();
 }
 
 void insert_symbol() 
 {
-	;
+        // set every variable
+        Index++;
+        Table -> Index = Index;
+        strcpy(Table -> ID, ID);
+        strcpy(Table -> Type, Type);
+        Table -> next = malloc(sizeof(struct symbol_table));
+
+        printf("Insert a symbol: %s\n", Table->ID);
+
+        // Table point to next
+        Table = Table->next;
+
 }
 
 int lookup_symbol() 
