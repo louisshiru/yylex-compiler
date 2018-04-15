@@ -15,6 +15,8 @@
 	void check_Undeclared(char*);
 	void check_Redefined(char*);
 	
+	int mylex();
+
 	/* Symbol Table Structure */
 	struct symbol_table{ 
 		int Index;	
@@ -33,7 +35,7 @@
 	struct symbol_table *Table, *head; // head -> Table's first
 	struct invalid_ID *i_Table, *i_head; // i_head -> i_Table's first
 	int line = 0; 		// count lines
-	int all_line = 0; 	// count comment line
+	int comment_newline = 0;// count comment line
 	int initflag = 0; 	// First time malloc and create symbol table
 	int Index = 0; 		// count index
 	char *ID; 		// Temp, store ID
@@ -57,18 +59,16 @@ slash_comm "//".*
 
 declare_var_int "var"(" "|[\t])+{id}(" "|[\t])+"int"(" "|[\t])*
 declare_var_flt "var"(" "|[\t])+{id}" "+"float32"(" "|[\t])*
-declare_var "var"(" "|[\t])+{id}(" "|[\t])*
 
 %x comment
 /* Rules section */
 %%
 
-"/*"	{ BEGIN(comment); strcat(store, yytext); }
-<comment>"*/" { BEGIN(INITIAL); strcat(store, yytext); printf("%s \t\t C++ Comment\n", store); strcpy(store, ""); }
-<comment>\n { strcat(store, yytext); line++; all_line++;}
+"/*"	{ BEGIN(comment); strcat(store, yytext);}
+<comment>"*/" { BEGIN(INITIAL); strcat(store, yytext); printf("%s \t\t C++ Comment\n", store); strcpy(store, "");}
+<comment>\n { strcat(store, yytext); line++; comment_newline++;}
 <comment>. { strcat(store, yytext); }
-
-{slash_comm} {all_line++; printf("%s \t\t C++ Comment\n", yytext); }
+{slash_comm} { printf("%s \t\t C++ Comment\n", yytext); }
 
 {declare_var_int} { printf("%s \t int TYPE VAR \n", text(yytext)); check_Redefined(ID); create_symbol(); }
 {declare_var_flt} { printf("%s \t float TYPE VAR \n", text(yytext)); check_Redefined(ID);create_symbol(); }
@@ -110,7 +110,7 @@ declare_var "var"(" "|[\t])+{id}(" "|[\t])*
 {number} { printf ("%s \t Number \n", yytext);}
 {string} { printf ("%s \t string \n", yytext);}
 {id}	{ printf("%s \t ID \n", yytext); check_Undeclared(yytext); }
-\n	{ line++;}
+\n	{ line++; }
 "{" { printf ("%s \t LCB \n", yytext);}
 "}" { printf ("%s \t RCB \n", yytext);}
 "(" { printf ("%s \t LB \n", yytext);}
@@ -123,6 +123,25 @@ declare_var "var"(" "|[\t])+{id}(" "|[\t])*
 int yywrap(void)
 {
     return 1;
+}
+
+int mylex()
+{
+	char line[512];
+	int i = 0, comment_line = 0;
+	while( fgets(line, 512, yyin) != NULL)
+	{	
+		for(i = 0; line[i] != '\0'; i++)
+		{
+			if( (line[i] == '*' && line[i+1] == '/') || (line[i] == '/' && line[i+1] == '/') )
+			{
+				comment_line++;
+				break;
+			}
+		}
+	}
+
+	return comment_line + comment_newline;
 }
 
 char *text(char* yytext){
@@ -297,12 +316,16 @@ int main(int argc,char *argv[])
 	yyin = fopen(argv[1],"r");
 	yylex();
 
+	fseek(yyin, 0, SEEK_SET);
+
 	printf("\nParse over, the line number is %d.\n\n", line);
-	
-        printf("comment: %d lines\n\n", all_line);
+
+        printf("comment: %d lines\n\n", mylex());
 	
 	printf("The symbol table dump:\n");
 	dump_symbol();
  
+	fclose(yyin);	
+
 	return 0;
 }

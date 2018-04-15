@@ -559,6 +559,8 @@ char *yytext;
 	void check_Undeclared(char*);
 	void check_Redefined(char*);
 	
+	int mylex();
+
 	/* Symbol Table Structure */
 	struct symbol_table{ 
 		int Index;	
@@ -577,7 +579,7 @@ char *yytext;
 	struct symbol_table *Table, *head; // head -> Table's first
 	struct invalid_ID *i_Table, *i_head; // i_head -> i_Table's first
 	int line = 0; 		// count lines
-	int all_line = 0; 	// count comment line
+	int comment_newline = 0;// count comment line
 	int initflag = 0; 	// First time malloc and create symbol table
 	int Index = 0; 		// count index
 	char *ID; 		// Temp, store ID
@@ -587,7 +589,7 @@ char *yytext;
 /* Define regular expression label */
 
 /* Rules section */
-#line 591 "lex.yy.c"
+#line 593 "lex.yy.c"
 
 #define INITIAL 0
 #define comment 1
@@ -806,10 +808,10 @@ YY_DECL
 		}
 
 	{
-#line 64 "compiler_hw1.l"
+#line 65 "compiler_hw1.l"
 
 
-#line 813 "lex.yy.c"
+#line 815 "lex.yy.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -868,29 +870,29 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 66 "compiler_hw1.l"
-{ BEGIN(comment); strcat(store, yytext); }
+#line 67 "compiler_hw1.l"
+{ BEGIN(comment); strcat(store, yytext);}
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 67 "compiler_hw1.l"
-{ BEGIN(INITIAL); strcat(store, yytext); printf("%s \t\t C++ Comment\n", store); strcpy(store, ""); }
+#line 68 "compiler_hw1.l"
+{ BEGIN(INITIAL); strcat(store, yytext); printf("%s \t\t C++ Comment\n", store); strcpy(store, "");}
 	YY_BREAK
 case 3:
 /* rule 3 can match eol */
 YY_RULE_SETUP
-#line 68 "compiler_hw1.l"
-{ strcat(store, yytext); line++; all_line++;}
+#line 69 "compiler_hw1.l"
+{ strcat(store, yytext); line++; comment_newline++;}
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 69 "compiler_hw1.l"
+#line 70 "compiler_hw1.l"
 { strcat(store, yytext); }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
 #line 71 "compiler_hw1.l"
-{all_line++; printf("%s \t\t C++ Comment\n", yytext); }
+{ printf("%s \t\t C++ Comment\n", yytext); }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
@@ -1067,7 +1069,7 @@ case 40:
 /* rule 40 can match eol */
 YY_RULE_SETUP
 #line 113 "compiler_hw1.l"
-{ line++;}
+{ line++; }
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
@@ -1094,7 +1096,7 @@ YY_RULE_SETUP
 #line 119 "compiler_hw1.l"
 ECHO;
 	YY_BREAK
-#line 1098 "lex.yy.c"
+#line 1100 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(comment):
 	yyterminate();
@@ -2107,6 +2109,25 @@ int yywrap(void)
     return 1;
 }
 
+int mylex()
+{
+	char line[512];
+	int i = 0, comment_line = 0;
+	while( fgets(line, 512, yyin) != NULL)
+	{	
+		for(i = 0; line[i] != '\0'; i++)
+		{
+			if( (line[i] == '*' && line[i+1] == '/') || (line[i] == '/' && line[i+1] == '/') )
+			{
+				comment_line++;
+				break;
+			}
+		}
+	}
+
+	return comment_line + comment_newline;
+}
+
 char *text(char* yytext){
 	
 	//strtok ( strings, delimiter );
@@ -2279,13 +2300,17 @@ int main(int argc,char *argv[])
 	yyin = fopen(argv[1],"r");
 	yylex();
 
+	fseek(yyin, 0, SEEK_SET);
+
 	printf("\nParse over, the line number is %d.\n\n", line);
-	
-        printf("comment: %d lines\n\n", all_line);
+
+        printf("comment: %d lines\n\n", mylex());
 	
 	printf("The symbol table dump:\n");
 	dump_symbol();
  
+	fclose(yyin);	
+
 	return 0;
 }
 
