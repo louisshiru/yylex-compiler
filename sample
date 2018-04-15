@@ -1,28 +1,9 @@
-/*
- * 	+
- *	+
- *	++++ Fuck you
- */
-
-print (abc)
-println (abc)
-print (x)
-
+/* ... */ /* ... */
+/**/
 var a int = 3
 var b int
-var a float32 = 3.333
-var b float32 = 7.777
-var a int = 3
-var c 
-
-print(c)
 println(a)
 // Hello world
 for (a < b) {
   a++
 }
-
-var a int
-var b float32
-var c float32
-print (x)

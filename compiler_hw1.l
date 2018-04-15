@@ -64,8 +64,8 @@ declare_var "var"(" "|[\t])+{id}(" "|[\t])*
 /* Rules section */
 %%
 
-"/*"	{ BEGIN(comment); comment_line++; strcat(store, yytext); }
-<comment>"*/" { BEGIN(INITIAL); strcat(store, yytext); printf("%s\t\t C++ Comment\n", store); strcpy(store, ""); }
+"/*"	{ BEGIN(comment); strcat(store, yytext); }
+<comment>"*/" { BEGIN(INITIAL); strcat(store, yytext); printf("%s \t\t C++ Comment\n", store); strcpy(store, ""); }
 <comment>\n { strcat(store, yytext); comment_line++; line++; }
 <comment>. { strcat(store, yytext); }
 
@@ -104,7 +104,7 @@ declare_var "var"(" "|[\t])+{id}(" "|[\t])*
 "*"	{ printf ("%s \t Mul \n", yytext); }
 "/"	{ printf ("%s \t Div \n", yytext); }
 "%"	{ printf ("%s \t Mod \n", yytext); }
-i"++"	{ printf ("%s \t Increment \n", yytext); }
+"++"	{ printf ("%s \t Increment \n", yytext); }
 "--"	{ printf ("%s \t Decrement \n", yytext); }
 
 {float_num} {printf ("%s \t Float32 \n", yytext);} 
