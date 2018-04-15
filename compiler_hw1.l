@@ -33,7 +33,7 @@
 	struct symbol_table *Table, *head; // head -> Table's first
 	struct invalid_ID *i_Table, *i_head; // i_head -> i_Table's first
 	int line = 0; 		// count lines
-	int comment_line = 0; 	// count comment line
+	int all_line = 0; 	// count comment line
 	int initflag = 0; 	// First time malloc and create symbol table
 	int Index = 0; 		// count index
 	char *ID; 		// Temp, store ID
@@ -64,11 +64,11 @@ declare_var "var"(" "|[\t])+{id}(" "|[\t])*
 %%
 
 "/*"	{ BEGIN(comment); strcat(store, yytext); }
-<comment>"*/" { BEGIN(INITIAL); strcat(store, yytext); printf("%s \t\t C++ Comment\n", store); strcpy(store, ""); comment_line++; }
-<comment>\n { strcat(store, yytext); line++; comment_line++; }
+<comment>"*/" { BEGIN(INITIAL); strcat(store, yytext); printf("%s \t\t C++ Comment\n", store); strcpy(store, ""); }
+<comment>\n { strcat(store, yytext); line++; all_line++;}
 <comment>. { strcat(store, yytext); }
 
-{slash_comm} {comment_line++; printf("%s \t\t C++ Comment\n", yytext); }
+{slash_comm} {all_line++; printf("%s \t\t C++ Comment\n", yytext); }
 
 {declare_var_int} { printf("%s \t int TYPE VAR \n", text(yytext)); check_Redefined(ID); create_symbol(); }
 {declare_var_flt} { printf("%s \t float TYPE VAR \n", text(yytext)); check_Redefined(ID);create_symbol(); }
@@ -110,7 +110,7 @@ declare_var "var"(" "|[\t])+{id}(" "|[\t])*
 {number} { printf ("%s \t Number \n", yytext);}
 {string} { printf ("%s \t string \n", yytext);}
 {id}	{ printf("%s \t ID \n", yytext); check_Undeclared(yytext); }
-\n	{ line++; comment_line++;}
+\n	{ line++;}
 "{" { printf ("%s \t LCB \n", yytext);}
 "}" { printf ("%s \t RCB \n", yytext);}
 "(" { printf ("%s \t LB \n", yytext);}
@@ -299,7 +299,7 @@ int main(int argc,char *argv[])
 
 	printf("\nParse over, the line number is %d.\n\n", line);
 	
-        printf("comment: %d lines\n\n", comment_line - line);
+        printf("comment: %d lines\n\n", all_line);
 	
 	printf("The symbol table dump:\n");
 	dump_symbol();

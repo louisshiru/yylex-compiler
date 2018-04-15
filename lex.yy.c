@@ -577,7 +577,7 @@ char *yytext;
 	struct symbol_table *Table, *head; // head -> Table's first
 	struct invalid_ID *i_Table, *i_head; // i_head -> i_Table's first
 	int line = 0; 		// count lines
-	int comment_line = 0; 	// count comment line
+	int all_line = 0; 	// count comment line
 	int initflag = 0; 	// First time malloc and create symbol table
 	int Index = 0; 		// count index
 	char *ID; 		// Temp, store ID
@@ -874,13 +874,13 @@ YY_RULE_SETUP
 case 2:
 YY_RULE_SETUP
 #line 67 "compiler_hw1.l"
-{ BEGIN(INITIAL); strcat(store, yytext); printf("%s \t\t C++ Comment\n", store); strcpy(store, ""); comment_line++; }
+{ BEGIN(INITIAL); strcat(store, yytext); printf("%s \t\t C++ Comment\n", store); strcpy(store, ""); }
 	YY_BREAK
 case 3:
 /* rule 3 can match eol */
 YY_RULE_SETUP
 #line 68 "compiler_hw1.l"
-{ strcat(store, yytext); line++; comment_line++; }
+{ strcat(store, yytext); line++; all_line++;}
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
@@ -890,7 +890,7 @@ YY_RULE_SETUP
 case 5:
 YY_RULE_SETUP
 #line 71 "compiler_hw1.l"
-{comment_line++; printf("%s \t\t C++ Comment\n", yytext); }
+{all_line++; printf("%s \t\t C++ Comment\n", yytext); }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
@@ -1067,7 +1067,7 @@ case 40:
 /* rule 40 can match eol */
 YY_RULE_SETUP
 #line 113 "compiler_hw1.l"
-{ line++; comment_line++;}
+{ line++;}
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
@@ -2281,7 +2281,7 @@ int main(int argc,char *argv[])
 
 	printf("\nParse over, the line number is %d.\n\n", line);
 	
-        printf("comment: %d lines\n\n", comment_line - line);
+        printf("comment: %d lines\n\n", all_line);
 	
 	printf("The symbol table dump:\n");
 	dump_symbol();
