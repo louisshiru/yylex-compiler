@@ -29,7 +29,6 @@
 	};
 	struct invalid_ID *traversal(char*);//Looking up invalid ID table
 	
-
 	/* Declaim */
 	struct symbol_table *Table, *head; // head -> Table's first
 	struct invalid_ID *i_Table, *i_head; // i_head -> i_Table's first
@@ -65,8 +64,8 @@ declare_var "var"(" "|[\t])+{id}(" "|[\t])*
 %%
 
 "/*"	{ BEGIN(comment); strcat(store, yytext); }
-<comment>"*/" { BEGIN(INITIAL); strcat(store, yytext); printf("%s \t\t C++ Comment\n", store); strcpy(store, ""); }
-<comment>\n { strcat(store, yytext); comment_line++; line++; }
+<comment>"*/" { BEGIN(INITIAL); strcat(store, yytext); printf("%s \t\t C++ Comment\n", store); strcpy(store, ""); comment_line++; }
+<comment>\n { strcat(store, yytext); line++; comment_line++; }
 <comment>. { strcat(store, yytext); }
 
 {slash_comm} {comment_line++; printf("%s \t\t C++ Comment\n", yytext); }
@@ -111,7 +110,7 @@ declare_var "var"(" "|[\t])+{id}(" "|[\t])*
 {number} { printf ("%s \t Number \n", yytext);}
 {string} { printf ("%s \t string \n", yytext);}
 {id}	{ printf("%s \t ID \n", yytext); check_Undeclared(yytext); }
-\n	{ line++; }
+\n	{ line++; comment_line++;}
 "{" { printf ("%s \t LCB \n", yytext);}
 "}" { printf ("%s \t RCB \n", yytext);}
 "(" { printf ("%s \t LB \n", yytext);}
@@ -299,8 +298,8 @@ int main(int argc,char *argv[])
 	yylex();
 
 	printf("\nParse over, the line number is %d.\n\n", line);
-
-        printf("comment: %d lines\n\n", comment_line);
+	
+        printf("comment: %d lines\n\n", comment_line - line);
 	
 	printf("The symbol table dump:\n");
 	dump_symbol();
