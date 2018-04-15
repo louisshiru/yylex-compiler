@@ -5,12 +5,15 @@
 	#include <string.h>
 
 	/* Symbol table function */
-	void check_err(char*);	// Use lookup function to check
 	void create_symbol(); 	// Create symbol table
 	void insert_symbol(); 	// Insert entry to symbol table
 	int lookup_symbol(); 	// Lookup symbol table
 	void dump_symbol(); 	// Dump out symbol table
 	char *text(char*);	// Extract ID, Type
+
+	/* Check syntax error fucntion */
+	void check_Undeclared(char*);
+	void check_Redefined(char*);
 	
 	/* Symbol Table Structure */
 	struct symbol_table{ 
@@ -24,6 +27,7 @@
 		char ID[40];
 		struct invalid_ID *next;
 	};
+	struct invalid_ID *traversal(char*);//Looking up invalid ID table
 	
 
 	/* Declaim */
@@ -54,6 +58,7 @@ slash_comm "//".*
 
 declare_var_int "var"(" "|[\t])+{id}(" "|[\t])+"int"(" "|[\t])*
 declare_var_flt "var"(" "|[\t])+{id}" "+"float32"(" "|[\t])*
+declare_var "var"(" "|[\t])+{id}(" "|[\t])*
 
 %x comment
 /* Rules section */
@@ -61,13 +66,13 @@ declare_var_flt "var"(" "|[\t])+{id}" "+"float32"(" "|[\t])*
 
 "/*"	{ BEGIN(comment); comment_line++; strcat(store, yytext); }
 <comment>"*/" { BEGIN(INITIAL); strcat(store, yytext); printf("%s\t\t C++ Comment\n", store); strcpy(store, ""); }
-<comment>\n { strcat(store, yytext); }
+<comment>\n { strcat(store, yytext); comment_line++; line++; }
 <comment>. { strcat(store, yytext); }
 
 {slash_comm} {comment_line++; printf("%s \t\t C++ Comment\n", yytext); }
 
-{declare_var_int} { printf("%s \t int TYPE VAR \n", text(yytext)); create_symbol(); }
-{declare_var_flt} { printf("%s \t float TYPE VAR \n", text(yytext)); create_symbol(); }
+{declare_var_int} { printf("%s \t int TYPE VAR \n", text(yytext)); check_Redefined(ID); create_symbol(); }
+{declare_var_flt} { printf("%s \t float TYPE VAR \n", text(yytext)); check_Redefined(ID);create_symbol(); }
 
 " "
 "print"	{ printf ("%s \t\t PRINT function \n", yytext);}
@@ -99,13 +104,13 @@ declare_var_flt "var"(" "|[\t])+{id}" "+"float32"(" "|[\t])*
 "*"	{ printf ("%s \t Mul \n", yytext); }
 "/"	{ printf ("%s \t Div \n", yytext); }
 "%"	{ printf ("%s \t Mod \n", yytext); }
-"++"	{ printf ("%s \t Increment \n", yytext); }
+i"++"	{ printf ("%s \t Increment \n", yytext); }
 "--"	{ printf ("%s \t Decrement \n", yytext); }
 
 {float_num} {printf ("%s \t Float32 \n", yytext);} 
 {number} { printf ("%s \t Number \n", yytext);}
 {string} { printf ("%s \t string \n", yytext);}
-{id}	{ printf("%s \t ID \n", yytext); check_err(yytext); }
+{id}	{ printf("%s \t ID \n", yytext); check_Undeclared(yytext); }
 \n	{ line++; }
 "{" { printf ("%s \t LCB \n", yytext);}
 "}" { printf ("%s \t RCB \n", yytext);}
@@ -133,29 +138,37 @@ char *text(char* yytext){
 	return ID;
 }
 
-//Traversal Table check syntax error
-void check_err(char* checkID)
+struct invalid_ID *traversal(char* checkID)
 {
-	struct symbol_table *temp = head;
 	struct invalid_ID *i_temp = i_head;
-
-	int Undeclared = 1; 
-	int Redefined = 0;
-
-	// check if already exist ID in invalid table, if, return. 
+	
 	while(i_temp -> next != NULL)
 	{
 		if(strcmp(i_temp->ID, checkID) == 0)
-			return;
+			return NULL;
 		i_temp = i_temp -> next;
 	}
+	
+	return i_head;
+}
+
+//Traversal Table check syntax error
+void check_Undeclared(char* checkID)
+{
+	if(!head) return;
+
+	struct symbol_table *temp = head;
+
+	int Undeclared = 1; 
+
+	// check if already exist ID in invalid table, if, return. 
+//	if(!traversal(checkID)) return;
 
 	while(temp -> next != NULL)
 	{
 		if(strcmp(temp -> ID, checkID) == 0)
 		{
 			Undeclared = 0; // check, if exist ID in symbol table. 
-			Redefined += 1; // check, if there' exist >1 same IDs in symbol table.
 		}
 		temp = temp -> next;
 	}
@@ -169,15 +182,38 @@ void check_err(char* checkID)
 		i_Table = i_Table -> next;
 		return;
 	}
+}
 
-	if (Redefined > 1)
-	{
-		printf(":%d '%s'-> Syntax Error! Redefined variable\n", line+1, checkID);
-		strcpy(i_Table -> ID, checkID);
-		i_Table -> next = malloc(sizeof(struct invalid_ID));
-		i_Table = i_Table -> next;
-		return;
-	}	
+void check_Redefined(char* checkID)
+{
+	if(!head) return;
+
+        struct symbol_table *temp = head;
+        struct invalid_ID *i_temp = i_head;
+
+        int Redefined = 0;
+
+        // check if already exist ID in invalid table, if, return. 
+//	if(!traversal(checkID)) return;
+
+        while(temp -> next != NULL)
+        {   
+                if(strcmp(temp -> ID, checkID) == 0)
+                {   
+                        Redefined += 1; // check, if exist >1 same IDs in symbol table.
+                }   
+                temp = temp -> next;
+        }   
+
+        //Found syntax error, append to invalid ID table.
+        if (Redefined > 0)
+        {   
+                printf(":%d '%s'-> Syntax Error! Redefined variable\n", line+1, checkID);
+                strcpy(i_Table -> ID, checkID);
+                i_Table -> next = malloc(sizeof(struct invalid_ID));
+                i_Table = i_Table -> next;
+                return;
+        } 	
 }
 
 void create_symbol() 
@@ -196,6 +232,9 @@ void create_symbol()
 		return;
 	}
 
+	if(!traversal(ID)) return;
+
+	else
 	insert_symbol();
 }
 
