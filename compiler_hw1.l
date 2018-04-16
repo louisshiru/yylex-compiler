@@ -16,7 +16,7 @@
 	void check_Redefined(char*);
 
 	/* Another Function */
-	int mylex();	// Judge comment lines
+	void gocmt();	// Judge comment lines
 	void init();	// alloc memory
 
 	/* Symbol Table Structure */
@@ -43,6 +43,8 @@
 	char *ID; 		// Temp, store ID
 	char *Type; 		// Temp, store Type
 	char store[1024] = ""; 	// Temp, store comments
+	int line_table[1024] = {0};
+	int line_index = 0;
 	
 %}
 
@@ -57,7 +59,6 @@ number {digit}+
 float_num {number}"."{number}
 
 string ["](.|{delim})*["]
-slash_comm "//".*
 
 declare_var_int "var"(" "|[\t])+{id}(" "|[\t])+"int"(" "|[\t])*
 declare_var_flt "var"(" "|[\t])+{id}" "+"float32"(" "|[\t])*
@@ -66,11 +67,11 @@ declare_var_flt "var"(" "|[\t])+{id}" "+"float32"(" "|[\t])*
 /* Rules section */
 %%
 
-"/*"	{ BEGIN(comment); strcat(store, yytext);}
+"//".* { printf("%s \t\t C++ Comment\n", yytext); line_table[line_index] = line; line_index++;}
+"/*"	{ BEGIN(comment); strcat(store, yytext); line_table[line_index] = line; line_index++;}
 <comment>"*/" { BEGIN(INITIAL); strcat(store, yytext); printf("%s \t\t C++ Comment\n", store); strcpy(store, "");}
-<comment>\n { strcat(store, yytext); line++; comment_line++;}
+<comment>\n { strcat(store, yytext); line++; line_table[line_index] = line; line_index++;}
 <comment>. { strcat(store, yytext); }
-{slash_comm} { printf("%s \t\t C++ Comment\n", yytext);}
 
 {declare_var_int} { printf("%s \t int TYPE VAR \n", text(yytext)); check_Redefined(ID); create_symbol(); }
 {declare_var_flt} { printf("%s \t float TYPE VAR \n", text(yytext)); check_Redefined(ID);create_symbol(); }
@@ -127,47 +128,47 @@ int yywrap(void)
     return 1;
 }
 
-int mylex()
+void gocmt()
 {
-	// { "//", "\n" } -> comment lines +1, depends on first be found ( yylex() )
-	// { "/*" } -> comment lines +1 ( mylex() )
-	// Ex: 
-	// 1| /* ... */ /* ... 	-> in mylex() found "/*", comment lines +1, but in yylex(), "\n" let comment lines +1, too.
-	// 2| */ /* ... */     	-> because previous line +1 twice, we don't need to +1 in this line.
-	// 3| // ... /* ... */	-> in yylex() comment lines +1
-	// 4| /*...*/ ... /*..*/-> in mylex() comment lines +1
-	// 5| ...		-> no comments.
+	typedef struct comments{
+		int index;
+		struct comments *next;	
+	}cmt;
 
-	char line[512];
-	int i = 0, left = 0, right = 0;
+	cmt* hi = malloc(sizeof(cmt));
+	cmt* c_head = hi;
 
-	while( fgets(line, 512, yyin) != NULL)
-	{	
-		for(i = 0; line[i] != '\0'; i++)
-		{
-			if( line[i] == '/' && line[i+1] == '/')
-			{
-				comment_line++;
-				break;
-			}
-
-			if( line[i] == '*' && line[i+1] == '/')
-			{	
-				right++;
-			}
-
-			if( line[i] == '/' && line[i+1] == '*')
-			{
-				left++;
-				if (right == left)
-					comment_line --;
-				comment_line++;
-				break;
-			}			
-		}
-		left = right = 0;
+	int i;
+	for(i = 0; i < line; i++)
+	{
+		hi -> index = 0;
+		hi -> next = malloc(sizeof(cmt));
+		hi = hi -> next;
 	}
-	return comment_line;
+
+	cmt *c_temp = c_head;
+	
+	int j = 0;
+	while(c_temp -> next != NULL)
+	{		
+
+		for(i = 0; i < line_index; i++)
+			if(line_table[i] == j){
+				c_temp -> index = 1;
+				break;
+			}
+		j++;
+		c_temp = c_temp -> next;
+	}
+
+	c_temp = c_head;
+	while(c_temp -> next != NULL)
+	{
+		if(c_temp -> index == 1)
+			comment_line++;
+		c_temp = c_temp -> next;
+	}
+	
 }
 
 char *text(char* yytext){
@@ -364,7 +365,9 @@ int main(int argc,char *argv[])
 
 	printf("\nParse over, the line number is %d.\n\n", line);
 
-        printf("comment: %d lines\n\n", mylex());
+	gocmt();
+
+        printf("comment: %d lines\n\n", comment_line);
 	
 	printf("The symbol table dump:\n");
 	dump_symbol();
