@@ -2312,6 +2312,8 @@ void dump_symbol()
 	struct symbol_table *cur;
 	struct invalid_ID *icur;
 	
+	init();
+
 	// If head's Index == 0, return
 	if(head -> Index == 0)
 	{
