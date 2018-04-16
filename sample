@@ -1,7 +1,7 @@
-var a int = 3
-var b int
-println(a)
+var Dog int = 3
+var cat int
+println(cat)
 // Hello world
-for (a < b) {
-  a++
+for (Dog < cat) {
+  cat++
 }

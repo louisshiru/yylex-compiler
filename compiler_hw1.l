@@ -14,8 +14,10 @@
 	/* Check syntax error fucntion */
 	void check_Undeclared(char*);
 	void check_Redefined(char*);
-	
-	int mylex();
+
+	/* Another Function */
+	int mylex();	// Judge comment lines
+	void init();	// alloc memory
 
 	/* Symbol Table Structure */
 	struct symbol_table{ 
@@ -35,7 +37,7 @@
 	struct symbol_table *Table, *head; // head -> Table's first
 	struct invalid_ID *i_Table, *i_head; // i_head -> i_Table's first
 	int line = 0; 		// count lines
-	int comment_newline = 0;// count comment line
+	int comment_line = 0;// count comment line
 	int initflag = 0; 	// First time malloc and create symbol table
 	int Index = 0; 		// count index
 	char *ID; 		// Temp, store ID
@@ -66,9 +68,9 @@ declare_var_flt "var"(" "|[\t])+{id}" "+"float32"(" "|[\t])*
 
 "/*"	{ BEGIN(comment); strcat(store, yytext);}
 <comment>"*/" { BEGIN(INITIAL); strcat(store, yytext); printf("%s \t\t C++ Comment\n", store); strcpy(store, "");}
-<comment>\n { strcat(store, yytext); line++; comment_newline++;}
+<comment>\n { strcat(store, yytext); line++; comment_line++;}
 <comment>. { strcat(store, yytext); }
-{slash_comm} { printf("%s \t\t C++ Comment\n", yytext); }
+{slash_comm} { printf("%s \t\t C++ Comment\n", yytext);}
 
 {declare_var_int} { printf("%s \t int TYPE VAR \n", text(yytext)); check_Redefined(ID); create_symbol(); }
 {declare_var_flt} { printf("%s \t float TYPE VAR \n", text(yytext)); check_Redefined(ID);create_symbol(); }
@@ -127,21 +129,45 @@ int yywrap(void)
 
 int mylex()
 {
+	// { "//", "\n" } -> comment lines +1, depends on first be found ( yylex() )
+	// { "/*" } -> comment lines +1 ( mylex() )
+	// Ex: 
+	// 1| /* ... */ /* ... 	-> in mylex() found "/*", comment lines +1, but in yylex(), "\n" let comment lines +1, too.
+	// 2| */ /* ... */     	-> because previous line +1 twice, we don't need to +1 in this line.
+	// 3| // ... /* ... */	-> in yylex() comment lines +1
+	// 4| /*...*/ ... /*..*/-> in mylex() comment lines +1
+	// 5| ...		-> no comments.
+
 	char line[512];
-	int i = 0, comment_line = 0;
+	int i = 0, left = 0, right = 0;
+
 	while( fgets(line, 512, yyin) != NULL)
 	{	
 		for(i = 0; line[i] != '\0'; i++)
 		{
-			if( (line[i] == '*' && line[i+1] == '/') || (line[i] == '/' && line[i+1] == '/') )
+			if( line[i] == '/' && line[i+1] == '/')
 			{
 				comment_line++;
 				break;
 			}
-		}
-	}
 
-	return comment_line + comment_newline;
+			if( line[i] == '*' && line[i+1] == '/')
+			{	
+				right++;
+			}
+
+			if( line[i] == '/' && line[i+1] == '*')
+			{
+				left++;
+				if (right == left)
+					comment_line --;
+				comment_line++;
+				break;
+			}			
+		}
+		left = right = 0;
+	}
+	return comment_line;
 }
 
 char *text(char* yytext){
@@ -170,29 +196,32 @@ struct invalid_ID *traversal(char* checkID)
 	return i_head;
 }
 
+void init()
+{
+	if(Table == NULL)
+	{   
+		Table = malloc(sizeof(struct symbol_table));
+                head = Table; // Set head as Table's first
+        }   
+     	if(i_Table == NULL)
+        {   
+                i_Table = malloc(sizeof(struct invalid_ID));
+                i_head = i_Table; // Set i_head as i_Table's first
+        } 
+}
+
 //Traversal Table check syntax error
 void check_Undeclared(char* checkID)
 {
-	if(!head) return;
-
-	struct symbol_table *temp = head;
-
-	int Undeclared = 1; 
+	init();
 
 	// check if already exist ID in invalid table, if, return. 
 //	if(!traversal(checkID)) return;
 
-	while(temp -> next != NULL)
-	{
-		if(strcmp(temp -> ID, checkID) == 0)
-		{
-			Undeclared = 0; // check, if exist ID in symbol table. 
-		}
-		temp = temp -> next;
-	}
+	int Undeclared = lookup_symbol(checkID, 0);
 
 	//Found syntax error, append to invalid ID table.
-	if (Undeclared == 1)
+	if (Undeclared == -1)
 	{
 		printf(":%d '%s'-> Syntax Error! Undeclared Variable\n", line+1, checkID);
 		strcpy(i_Table -> ID, checkID);
@@ -206,22 +235,10 @@ void check_Redefined(char* checkID)
 {
 	if(!head) return;
 
-        struct symbol_table *temp = head;
-        struct invalid_ID *i_temp = i_head;
-
-        int Redefined = 0;
-
         // check if already exist ID in invalid table, if, return. 
 //	if(!traversal(checkID)) return;
 
-        while(temp -> next != NULL)
-        {   
-                if(strcmp(temp -> ID, checkID) == 0)
-                {   
-                        Redefined += 1; // check, if exist >1 same IDs in symbol table.
-                }   
-                temp = temp -> next;
-        }   
+	int Redefined = lookup_symbol(checkID, 1);
 
         //Found syntax error, append to invalid ID table.
         if (Redefined > 0)
@@ -239,10 +256,8 @@ void create_symbol()
 	// If never init, do this.
 	if (initflag == 0){
         	
-		Table = malloc(sizeof(struct symbol_table));
-        	head = Table; // Set head as Table's first
-        	i_Table = malloc(sizeof(struct invalid_ID));
-        	i_head = i_Table; // Set i_head as i_Table's first
+		init();
+		
         	printf("Create a symbol table\n");
 		
 		insert_symbol();
@@ -272,42 +287,71 @@ void insert_symbol()
 
 }
 
-int lookup_symbol() 
+int lookup_symbol(char* lookupID, int mode) 
 {
-	;
+	if(!head) return ~0;
+
+	struct symbol_table *temp = head;
+
+	if(mode == 0){
+
+		while(temp -> Index != 0)
+		{
+			if( strcmp(lookupID, temp->ID) == 0 )
+				return temp -> Index;
+			temp = temp -> next;
+		}
+		return ~0;
+	}
+
+	int Redefined = 0;
+
+	if(mode == 1)
+	{
+		while(temp -> next != NULL)
+        	{   
+                	if(strcmp(temp -> ID, lookupID) == 0)
+                	{   
+                        	Redefined += 1; // check, if exist >1 same IDs in symbol table.
+                	}   
+                	temp = temp -> next;
+        	}
+	}
+
+	return Redefined;
 }
 
 void dump_symbol() 
 {
-	struct symbol_table *next, *temp;
-
-	// If head is NULL return
-	if(!head) return;
-
-	temp = head;
-
-        while(temp -> Index != 0){
-                printf("%d\t%s\t%s\n", temp->Index, temp -> ID, temp->Type);
-                temp = temp -> next;
-        }
-
-	// free all memory
-	// If head's address same as Table's,
-	// free head and return.
-	if (head == Table)
+	struct symbol_table *cur;
+	struct invalid_ID *icur;
+	
+	// If head's Index == 0, return
+	if(head -> Index == 0)
 	{
-		free(head);
+		puts("\nNothing in symbol table, return\n"); 
 		return;
 	}
+	
+	//show and free symbol table
+        while(head -> next != NULL){
+                printf("%d\t%s\t%s\n", head->Index, head -> ID, head->Type);
+		cur = head;
+		head = head -> next;
+		free(cur);
+        }
 
-	// else traversal Table and free
-	while(Table -> next != NULL)
+	puts("");
+	
+	//free invalid_ID table
+	if(!i_head) return;	
+	while(i_head -> next != NULL)
 	{
-		next = Table -> next;
-		free(Table);
-		Table = next;
+		icur = i_head;
+		i_head = i_head -> next;
+		free(icur);
 	}
-
+	
 	return;
 }
 
@@ -324,7 +368,7 @@ int main(int argc,char *argv[])
 	
 	printf("The symbol table dump:\n");
 	dump_symbol();
- 
+
 	fclose(yyin);	
 
 	return 0;
