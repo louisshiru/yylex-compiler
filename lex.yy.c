@@ -551,7 +551,7 @@ char *yytext;
 	/* Symbol table function */
 	void create_symbol(); 	// Create symbol table
 	void insert_symbol(); 	// Insert entry to symbol table
-	int lookup_symbol(); 	// Lookup symbol table
+	int lookup_symbol(char*, int); // Lookup symbol table
 	void dump_symbol(); 	// Dump out symbol table
 	char *text(char*);	// Extract ID, Type
 
@@ -2347,8 +2347,6 @@ int main(int argc,char *argv[])
 {
 	yyin = fopen(argv[1],"r");
 	yylex();
-
-	fseek(yyin, 0, SEEK_SET);
 
 	printf("\nParse over, the line number is %d.\n\n", line);
 
