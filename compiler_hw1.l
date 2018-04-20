@@ -74,7 +74,7 @@ declare_var_flt "var"(" "|[\t])+{id}" "+"float32"(" "|[\t])*
 <comment>. { strcat(store, yytext); }
 
 {declare_var_int} { printf("%s \t int TYPE VAR \n", text(yytext)); check_Redefined(ID); create_symbol(); }
-{declare_var_flt} { printf("%s \t float TYPE VAR \n", text(yytext)); check_Redefined(ID);create_symbol(); }
+{declare_var_flt} { printf("%s \t float32 TYPE VAR \n", text(yytext)); check_Redefined(ID);create_symbol(); }
 
 " "
 "print"	{ printf ("%s \t\t PRINT function \n", yytext);}
@@ -130,45 +130,18 @@ int yywrap(void)
 
 void gocmt()
 {
-	typedef struct comments{
-		int index;
-		struct comments *next;	
-	}cmt;
-
-	cmt* hi = malloc(sizeof(cmt));
-	cmt* c_head = hi;
-
-	int i;
+	int i, j;
 	for(i = 0; i < line; i++)
-	{
-		hi -> index = 0;
-		hi -> next = malloc(sizeof(cmt));
-		hi = hi -> next;
-	}
-
-	cmt *c_temp = c_head;
-	
-	int j = 0;
-	while(c_temp -> next != NULL)
 	{		
-
-		for(i = 0; i < line_index; i++)
-			if(line_table[i] == j){
-				c_temp -> index = 1;
+		for(j = 0; j < line_index; j++)
+		{
+			if(line_table[j] == i)
+			{
+				comment_line++;
 				break;
 			}
-		j++;
-		c_temp = c_temp -> next;
+		}
 	}
-
-	c_temp = c_head;
-	while(c_temp -> next != NULL)
-	{
-		if(c_temp -> index == 1)
-			comment_line++;
-		c_temp = c_temp -> next;
-	}
-	
 }
 
 char *text(char* yytext){

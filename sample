@@ -1,25 +1,17 @@
 /* */ /*
 
+*/ // /*
 
-*/ /* */ /*
+//*/
+kkkk
+/* ////////////////*//*
+//*/
 
-*/ // /* 
-
-/*   ...  */ /*
-//*/ 
-
-/* // */  /*/*/ 
-/*/*/ 
-/*//*/
-Dog
-var Dog float32
-var Dog int = 3
+// abc
 var cat int
-println(cat)
-// Hello world
 for (Dog < cat) {
   cat++
 }
-
+PrInt(666)
 var Dog int = 99
 var Dog float32 = 8
