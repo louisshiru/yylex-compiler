@@ -1,0 +1,60 @@
+Advance Feature:
+
+Discard C and C++ type comments. (10pt)
+Count the comment lines. (10pt)
+
+宣告 :
+/* Definition section */
+%{
+...
+	void gocmt();
+	int line_table[1024] = {0};
+	int line_index = 0;
+...
+%}
+
+/* Define regular expression label */
+...	
+%x comments
+...
+%%
+/* Rules section */
+...
+"//".* { printf("%s \t\t C++ Comment\n", yytext); line_table[line_index] = line; line_index++;}
+"/*"	{ BEGIN(comment); strcat(store, yytext); line_table[line_index] = line; line_index++;}
+<comment>"*/" { BEGIN(INITIAL); strcat(store, yytext); printf("%s \t\t C++ Comment\n", store); strcpy(store, "");}
+<comment>\n { strcat(store, yytext); line++; line_table[line_index] = line; line_index++;}
+<comment>. { strcat(store, yytext); }
+...
+%%
+
+說明 :
+	Discard C and C++ type comments 
+		-> 把 // 和 /* */ 的 rule 寫好。print yytext就好。
+		-> /* 到 */ 會有 .* \n 所以要在建一個陣列將他們存起來之後 print 出來
+	
+	Count the comment lines
+		-> line_table 紀錄出現 comment 的當前行數
+		-> line_index 紀錄目前出現幾個 comment 
+		-> gocmt()	在yylex()之後。處理 line(總行數), line_table, line_index 的關係。
+		-> 總之就是把所有出現 comment 的行數做整理，之後數哪幾行有 comment 做加總就可以。
+--------------------------------------------------------------
+
+Syntax error check. (10pt)
+。 Undeclared variables
+。 Redefined variables
+宣告 :
+/* Definition section */
+%{
+...
+	void check_Undeclared(char*);
+	void check_Redefined(char*);
+...
+%}
+	
+說明 :
+	Undeclared variables 
+		-> 出現 ID 則搜尋 symbol_table，如果 ID 不在 symbol_table 就是 Undeclared ID
+	Redefine variables
+		-> 做宣告時搜尋 symbol_table，如果 ID 出現大於 1 次 就是 Redefine ID
+

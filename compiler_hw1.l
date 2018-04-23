@@ -52,18 +52,18 @@
 
 letter [a-zA-Z]
 digit [0-9]
-delim [" "\n\t]
 
 id {letter}+({letter}|{digit})*
 number {digit}+
 float_num {number}"."{number}
 
-string ["](.|{delim})*["]
-
 declare_var_int "var"(" "|[\t])+{id}(" "|[\t])+"int"(" "|[\t])*
 declare_var_flt "var"(" "|[\t])+{id}" "+"float32"(" "|[\t])*
 
+quote ["]
+
 %x comment
+%x string
 /* Rules section */
 %%
 
@@ -72,6 +72,11 @@ declare_var_flt "var"(" "|[\t])+{id}" "+"float32"(" "|[\t])*
 <comment>"*/" { BEGIN(INITIAL); strcat(store, yytext); printf("%s \t\t C++ Comment\n", store); strcpy(store, "");}
 <comment>\n { strcat(store, yytext); line++; line_table[line_index] = line; line_index++;}
 <comment>. { strcat(store, yytext); }
+
+{quote} { BEGIN(string); strcat(store, yytext); }
+<string>{quote} { BEGIN(INITIAL); strcat(store, yytext); printf("%s \t String \n", store); strcpy(store, "");}
+<string>\n { strcat(store, yytext); line++;}
+<string>. { strcat(store, yytext); }
 
 {declare_var_int} { printf("%s \t int TYPE VAR \n", text(yytext)); check_Redefined(ID); create_symbol(); }
 {declare_var_flt} { printf("%s \t float32 TYPE VAR \n", text(yytext)); check_Redefined(ID);create_symbol(); }
@@ -111,7 +116,6 @@ declare_var_flt "var"(" "|[\t])+{id}" "+"float32"(" "|[\t])*
 
 {float_num} {printf ("%s \t Float32 \n", yytext);} 
 {number} { printf ("%s \t Number \n", yytext);}
-{string} { printf ("%s \t string \n", yytext);}
 {id}	{ printf("%s \t ID \n", yytext); check_Undeclared(yytext); }
 \n	{ line++; }
 "{" { printf ("%s \t LCB \n", yytext);}
@@ -197,7 +201,7 @@ void check_Undeclared(char* checkID)
 	//Found syntax error, append to invalid ID table.
 	if (Undeclared == -1)
 	{
-		printf(":%d '%s'-> Syntax Error! Undeclared Variable\n", line+1, checkID);
+		printf(":%d '%s'-> Semantic Error! Undeclared Variable\n", line+1, checkID);
 		strcpy(i_Table -> ID, checkID);
 		i_Table -> next = malloc(sizeof(struct invalid_ID));
 		i_Table = i_Table -> next;
@@ -217,7 +221,7 @@ void check_Redefined(char* checkID)
         //Found syntax error, append to invalid ID table.
         if (Redefined > 0)
         {   
-                printf(":%d '%s'-> Syntax Error! Redefined variable\n", line+1, checkID);
+                printf(":%d '%s'-> Semantic Error! Redefined variable\n", line+1, checkID);
                 strcpy(i_Table -> ID, checkID);
                 i_Table -> next = malloc(sizeof(struct invalid_ID));
                 i_Table = i_Table -> next;
@@ -349,3 +353,4 @@ int main(int argc,char *argv[])
 
 	return 0;
 }
+
